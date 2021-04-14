@@ -27,7 +27,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/google-samples/microservices-demo/recommendationservice:v0.1.5
+        image: gcr.io/google-samples/microservices-demo/recommendationservice:v0.2.2
         ports:
         - containerPort: 8080
         readinessProbe:
@@ -72,9 +72,10 @@ spec:
       annotations:
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
     spec:
+      serviceAccountName: default
       containers:
         - name: server
-          image: gcr.io/google-samples/microservices-demo/frontend:v0.1.5
+          image: gcr.io/google-samples/microservices-demo/frontend:v0.2.2
           ports:
           - containerPort: 8080
           readinessProbe:
@@ -110,6 +111,8 @@ spec:
             value: "checkoutservice:5050"
           - name: AD_SERVICE_ADDR
             value: "adservice:9555"
+#          - name: ENV_PLATFORM
+#            value: "gcp"
           - name: DISABLE_TRACING
             value: "1"
           - name: DISABLE_PROFILER
@@ -163,10 +166,11 @@ spec:
       labels:
         app: productcatalogservice
     spec:
+      serviceAccountName: default
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/google-samples/microservices-demo/productcatalogservice:v0.1.5
+        image: gcr.io/google-samples/microservices-demo/productcatalogservice:v0.2.2
         ports:
         - containerPort: 3550
         env:

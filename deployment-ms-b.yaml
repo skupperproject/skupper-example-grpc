@@ -24,9 +24,10 @@ spec:
       labels:
         app: checkoutservice
     spec:
+      serviceAccountName: default
       containers:
         - name: server
-          image: gcr.io/google-samples/microservices-demo/checkoutservice:v0.1.5
+          image: gcr.io/google-samples/microservices-demo/checkoutservice:v0.2.2
           ports:
           - containerPort: 5050
           readinessProbe:
@@ -79,10 +80,11 @@ spec:
       labels:
         app: cartservice
     spec:
+      serviceAccountName: default
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/google-samples/microservices-demo/cartservice:v0.1.5
+        image: gcr.io/google-samples/microservices-demo/cartservice:v0.2.2
         ports:
         - containerPort: 7070
         env:
@@ -122,10 +124,11 @@ spec:
       labels:
         app: currencyservice
     spec:
+      serviceAccountName: default
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/google-samples/microservices-demo/currencyservice:v0.1.5
+        image: gcr.io/google-samples/microservices-demo/currencyservice:v0.2.2
         ports:
         - name: grpc
           containerPort: 7000
@@ -205,10 +208,11 @@ spec:
       labels:
         app: adservice
     spec:
+      serviceAccountName: default
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/google-samples/microservices-demo/adservice:v0.1.5
+        image: gcr.io/google-samples/microservices-demo/adservice:v0.2.2
         ports:
         - containerPort: 9555
         env:
@@ -217,6 +221,8 @@ spec:
         - name: DISABLE_STATS
           value: "1"
         - name: DISABLE_TRACING
+          value: "1"
+        - name: DISABLE_PROFILER
           value: "1"
         #- name: JAEGER_SERVICE_ADDR
         #  value: "jaeger-collector:14268"
@@ -237,17 +243,3 @@ spec:
           periodSeconds: 15
           exec:
             command: ["/bin/grpc_health_probe", "-addr=:9555"]
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis-cart
-spec:
-  type: ClusterIP
-  selector:
-    app: redis-cart
-  ports:
-  - name: redis
-    port: 6379
-    targetPort: 6379
----
