@@ -27,7 +27,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/google-samples/microservices-demo/emailservice:v0.3.0
+        image: gcr.io/google-samples/microservices-demo/emailservice:v0.5.0
         ports:
         - containerPort: 8080
         env:
@@ -45,6 +45,13 @@ spec:
           periodSeconds: 5
           exec:
             command: ["/bin/grpc_health_probe", "-addr=:8080"]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -62,12 +69,14 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/google-samples/microservices-demo/paymentservice:v0.3.0
+        image: gcr.io/google-samples/microservices-demo/paymentservice:v0.5.0
         ports:
         - containerPort: 50051
         env:
         - name: PORT
           value: "50051"
+        - name: DISABLE_PROFILER
+          value: "1"
         readinessProbe:
           exec:
             command: ["/bin/grpc_health_probe", "-addr=:50051"]
@@ -97,7 +106,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: gcr.io/google-samples/microservices-demo/shippingservice:v0.3.0
+        image: gcr.io/google-samples/microservices-demo/shippingservice:v0.5.0
         ports:
         - containerPort: 50051
         env:
@@ -109,8 +118,6 @@ spec:
           value: "1"
         - name: DISABLE_PROFILER
           value: "1"
-        # - name: JAEGER_SERVICE_ADDR
-        #   value: "jaeger-collector:14268"
         readinessProbe:
           periodSeconds: 5
           exec:

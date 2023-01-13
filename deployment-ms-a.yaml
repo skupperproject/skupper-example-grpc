@@ -27,7 +27,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/google-samples/microservices-demo/recommendationservice:v0.3.0
+        image: gcr.io/google-samples/microservices-demo/recommendationservice:v0.5.0
         ports:
         - containerPort: 8080
         readinessProbe:
@@ -49,6 +49,13 @@ spec:
           value: "1"
         - name: DISABLE_DEBUGGER
           value: "1"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 220Mi
+          limits:
+            cpu: 200m
+            memory: 450Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -67,7 +74,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: gcr.io/google-samples/microservices-demo/frontend:v0.3.0
+          image: gcr.io/google-samples/microservices-demo/frontend:v0.5.0
           ports:
           - containerPort: 8080
           readinessProbe:
@@ -103,12 +110,21 @@ spec:
             value: "checkoutservice:5050"
           - name: AD_SERVICE_ADDR
             value: "adservice:9555"
-          - name: DISABLE_TRACING
-            value: "1"
-          - name: DISABLE_PROFILER
-            value: "1"
-          # - name: JAEGER_SERVICE_ADDR
-          #   value: "jaeger-collector:14268"
+          # # ENV_PLATFORM: One of: local, gcp, aws, azure, onprem, alibaba
+          # # When not set, defaults to "local" unless running in GKE, otherwies auto-sets to gcp 
+          # - name: ENV_PLATFORM 
+          #   value: "aws"
+          - name: ENABLE_PROFILER
+            value: "0"
+          # - name: CYMBAL_BRANDING
+          #   value: "true"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
 ---
 apiVersion: v1
 kind: Service
@@ -152,7 +168,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/google-samples/microservices-demo/productcatalogservice:v0.3.0
+        image: gcr.io/google-samples/microservices-demo/productcatalogservice:v0.5.0
         ports:
         - containerPort: 3550
         env:
@@ -164,11 +180,16 @@ spec:
           value: "1"
         - name: DISABLE_PROFILER
           value: "1"
-        # - name: JAEGER_SERVICE_ADDR
-        #   value: "jaeger-collector:14268"
         readinessProbe:
           exec:
             command: ["/bin/grpc_health_probe", "-addr=:3550"]
         livenessProbe:
           exec:
             command: ["/bin/grpc_health_probe", "-addr=:3550"]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
