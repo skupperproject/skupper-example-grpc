@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: gcr.io/google-samples/microservices-demo/checkoutservice:v0.3.0
+          image: gcr.io/google-samples/microservices-demo/checkoutservice:v0.5.0
           ports:
           - containerPort: 5050
           readinessProbe:
@@ -56,8 +56,13 @@ spec:
             value: "1"
           - name: DISABLE_PROFILER
             value: "1"
-          # - name: JAEGER_SERVICE_ADDR
-          #   value: "jaeger-collector:14268"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -75,16 +80,19 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/google-samples/microservices-demo/cartservice:v0.3.0
+        image: gcr.io/google-samples/microservices-demo/cartservice:v0.5.0
         ports:
         - containerPort: 7070
         env:
         - name: REDIS_ADDR
           value: "redis-cart:6379"
-        - name: PORT
-          value: "7070"
-        - name: LISTEN_ADDR
-          value: "0.0.0.0"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 64Mi
+          limits:
+            cpu: 300m
+            memory: 128Mi
         readinessProbe:
           initialDelaySeconds: 15
           exec:
@@ -111,7 +119,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/google-samples/microservices-demo/currencyservice:v0.3.0
+        image: gcr.io/google-samples/microservices-demo/currencyservice:v0.5.0
         ports:
         - name: grpc
           containerPort: 7000
@@ -130,6 +138,13 @@ spec:
         livenessProbe:
           exec:
             command: ["/bin/grpc_health_probe", "-addr=:7000"]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -160,6 +175,13 @@ spec:
         volumeMounts:
         - mountPath: /data
           name: redis-data
+        resources:
+          limits:
+            memory: 256Mi
+            cpu: 125m
+          requests:
+            cpu: 70m
+            memory: 200Mi
       volumes:
       - name: redis-data
         emptyDir: {}
@@ -180,7 +202,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: gcr.io/google-samples/microservices-demo/adservice:v0.3.4
+        image: gcr.io/google-samples/microservices-demo/adservice:v0.5.0
         ports:
         - containerPort: 9555
         env:
@@ -190,8 +212,13 @@ spec:
           value: "1"
         - name: DISABLE_TRACING
           value: "1"
-        #- name: JAEGER_SERVICE_ADDR
-        #  value: "jaeger-collector:14268"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 180Mi
+          limits:
+            cpu: 300m
+            memory: 300Mi
         readinessProbe:
           initialDelaySeconds: 20
           periodSeconds: 15
