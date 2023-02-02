@@ -149,6 +149,26 @@ terminal for the **private1** cluster, start a firefox browser and access the sh
 
 Open a browser and use the url provided above to access the `Online Boutique`.
 
+## Step 6: Run the load generator
+
+The `Online Boutique` application has a load generator that creates realistic usage patterns on the website.
+
+1. In the terminal for the **private1** cluster, deploy the load generator:
+
+   ```bash
+   kubectl apply -f skupper-example-grpc/deployment-loadgenerator.yaml
+   ```
+2. In the terminal for the **private1** cluster, observe the output from the load generator:
+
+   ```bash
+   kubectl logs -f deploy/loadgenerator
+   ```
+3. In the terminal for the **private1** cluster, stop the load generator:
+
+   ```bash
+   kubectl delete -f skupper-example-grpc/deployment-loadgenerator.yaml
+   ```
+   
 ## Cleaning Up
 
 Restore your cluster environment by returning the resources created in the demonstration. On each cluster, delete the demo resources and the skupper network:
