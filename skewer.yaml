@@ -1,0 +1,212 @@
+title: Skupper Online Boutique
+subtitle: A Cloud-Native gRPC microservice-based application deployed across multiple Kubernetes clusters using Skupper
+github_actions_url: https://github.com/skupperproject/skupper-example-grpc/actions/workflows/main.yaml
+overview: |
+  This tutorial demonstrates how to deploy the [Online
+  Boutique](https://github.com/GoogleCloudPlatform/microservices-demo/)
+  microservices demo application across multiple Kubernetes clusters that are
+  located in different public and private cloud providers. This project
+  contains a 10-tier microservices application developed by Google to
+  demonstrate the use of technologies like Kubernetes.
+
+  In this tutorial, you will create a Virtual Application Network that enables
+  communications across the public and private clusters. You will then deploy a
+  subset of the application's grpc based microservices to each cluster. You
+  will then access the `Online Boutique` web interface to browse items, add
+  them to the cart and purchase them.
+sites:
+  private1:
+    kubeconfig: ~/.kube/config-private1
+    namespace: private1
+  public1:
+    kubeconfig: ~/.kube/config-public1
+    namespace: public1
+  public2:
+    kubeconfig: ~/.kube/config-public2
+    namespace: public2
+steps:
+  - standard: install_the_skupper_command_line_tool
+  - standard: configure_separate_console_sessions
+  - standard: access_your_clusters
+  - standard: set_up_your_namespaces
+  - standard: install_skupper_in_your_namespaces
+  - standard: check_the_status_of_your_namespaces
+  - title: Link your namespaces
+    preamble: |
+      Creating a link requires use of two `skupper` commands in
+      conjunction, `skupper token create` and `skupper link create`.
+
+      The `skupper token create` command generates a secret token that
+      signifies permission to create a link.  The token also carries the
+      link details.  Then, in a remote namespace, The `skupper link
+      create` command uses the token to create a link to the namespace
+      that generated it.
+
+      **Note:** The link token is truly a *secret*.  Anyone who has the
+      token can link to your namespace.  Make sure that only those you
+      trust have access to it.
+
+      First, use `skupper token create --uses 2` in the `public1` namespace to
+      generate a token for the other two sites.  Then, use `skupper link
+      create` in the other sites to create a link. Generate another token in
+      `public2`, and create a link from `private1`. The resulting network
+      should look like this.
+
+      <img src="images/BoutiqueSites.png" width="400"/>
+
+    commands:
+      public1:
+        - output: Token written to ~/public1.token
+          run: skupper token create ~/public1.token --uses 2
+      public2:
+        - output: Token written to ~/public2.token
+          run: skupper token create ~/public2.token
+        - run: skupper link create ~/public1.token
+          output: |
+            Site configured to link to https://10.109.0.238:8081/cb591b0d-8977-11ee-987c-644bf0127228 (name=link1)
+            Check the status of the link using 'skupper link status'.
+        - run: skupper link status --wait 60
+          apply: test
+      private1:
+        - run: skupper link create ~/public1.token
+          output: |
+            Site configured to link to https://10.109.0.238:8081/cb591b0d-8977-11ee-987c-644bf0127228 (name=link1)
+            Check the status of the link using 'skupper link status'.
+        - run: skupper link create ~/public2.token
+          output: |
+            Site configured to link to https://10.108.25.64:8081/ce4095e5-8977-11ee-8641-644bf0127228 (name=link2)
+            Check the status of the link using 'skupper link status'.
+        - run: skupper link status --wait 60
+          apply: test
+    postamble: |
+      If your console sessions are on different machines, you may need
+      to use `sftp` or a similar tool to transfer the token securely.
+      By default, tokens expire after a single use or 15 minutes after
+      creation.
+  - title: Deploy the application microservices
+    preamble: |
+      After creating the Virtual Application Network, deploy the grpc based microservices for the `Online Boutique` application. There are three `deployment .yaml` files
+      labelled *a, b, and c*. These files (arbitrarily) define a subset of the application microservices to deploy to a cluster.
+
+      | Deployment           | Microservices
+      | -------------------- | ---------------------------------------- |
+      | deployment-ms-a.yaml | frontend, productcatalog, recommendation |
+      | deployment-ms-b.yaml | ad, cart, checkout, currency, redis-cart |
+      | deployment-ms-c.yaml | email, payment, shipping                 |
+    commands:
+      public1:
+        - run: kubectl apply -f ./deployment-ms-a.yaml
+          output: |
+            deployment.apps/recommendationservice created
+            deployment.apps/frontend created
+            service/frontend created
+            service/frontend-external created
+            deployment.apps/productcatalogservice created
+      private1:
+        - run: kubectl apply -f ./deployment-ms-b.yaml
+          output: |
+            deployment.apps/checkoutservice created
+            deployment.apps/cartservice created
+            deployment.apps/currencyservice created
+            deployment.apps/redis-cart created
+            deployment.apps/adservice created
+      public2:
+        - run: kubectl apply -f ./deployment-ms-c.yaml
+          output: |
+            deployment.apps/emailservice created
+            deployment.apps/paymentservice created
+            deployment.apps/shippingservice created
+  - title: Expose the microservices to the Virtual Application Network
+    preamble: |
+      There are three script files labelled *-a, -b, and -c*. These files
+      expose the services created above to join the Virtual Application
+      Network. Note that the frontend service is not assigned to the Virtual
+      Application Network as it is setup for external web access.
+      
+      | File                    | Deployments
+      | ----------------------- | ---------------------------------------- |
+      | expose-deployments-a.sh | productcatalog, recommendation           |
+      | expose-deployments-b.sh | ad, cart, checkout, currency, redis-cart |
+      | expose-deployments-c.sh | email, payment, shipping                 |
+    commands:
+      public1:
+        - run: ./expose-deployments-a.sh
+          output: |
+            deployment productcatalogservice exposed as productcatalogservice
+            deployment recommendationservice exposed as recommendationservice
+      private1:
+        - run: ./expose-deployments-b.sh
+          output: |
+            deployment checkoutservice exposed as checkoutservice
+            deployment cartservice exposed as cartservice
+            deployment currencyservice exposed as currencyservice
+            deployment adservice exposed as adservice
+            deployment redis-cart exposed as redis-cart
+      public2:
+        - run: ./expose-deployments-c.sh
+          output: |
+            deployment emailservice exposed as emailservice
+            deployment paymentservice exposed as paymentservice
+            deployment shippingservice exposed as shippingservice
+  - title: Access The Boutique Shop Application
+    preamble: |
+      The web frontend for the `Online Boutique` application can be accessed
+      via the *frontend-external* service. In the terminal for the **public1**
+      cluster, find the external address of the frontend-external service and
+      open the shop UI in your browser.
+    commands:
+      public1:
+        - await: service/frontend-external
+        - run: echo http://$(kubectl get service frontend-external -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          output: http://<frontend ip>
+  - title: Run the load generator
+    preamble: |
+      The `Online Boutique` application has a load generator that creates realistic usage patterns on the website.
+      
+      In the terminal for the **private1** cluster, deploy the load generator.
+    commands:
+      private1:
+        - run: kubectl apply -f ./deployment-loadgenerator.yaml
+          output: |
+            deployment.apps/loadgenerator created
+        - await: deployment/loadgenerator
+        - run: sleep 10 && kubectl logs -f deploy/loadgenerator --tail=0 --follow --limit-bytes 2048
+          output: |
+            Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s
+            --------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+            GET      /                                                                                 12     0(0.00%) |     29      19      46     28 |    1.20        0.00
+            GET      /cart                                                                              2     0(0.00%) |     16       9      23     10 |    0.20        0.00
+            POST     /cart                                                                              4     0(0.00%) |     19      13      28     16 |    0.30        0.00
+            GET      /product/0PUK6V6EV0                                                                1     0(0.00%) |     11      11      11     11 |    0.00        0.00
+            ...
+        - run: kubectl delete -f ./deployment-loadgenerator.yaml
+          output: |
+            deployment.apps "loadgenerator" deleted
+  - standard: accessing_the_web_console
+  - standard: cleaning_up
+    commands:
+      public1:
+        - run: ./unexpose-deployments-a.sh
+        - run: kubectl delete -f ./deployment-ms-a.yaml
+        - run: skupper delete
+      private1:
+        - run: ./unexpose-deployments-b.sh
+        - run: kubectl delete -f ./deployment-ms-b.yaml
+        - run: skupper delete
+      public2:
+        - run: ./unexpose-deployments-c.sh
+        - run: kubectl delete -f ./deployment-ms-c.yaml
+        - run: skupper delete
+summary: |
+  This example locates the many services that make up a microservice
+  application across three different namespaces on different clusters with no
+  modifications to the application. Without Skupper, it would normally take
+  careful network planning to avoid exposing these services over the public
+  internet.
+
+  Introducing Skupper into each namespace allows us to create a virtual
+  application network that can connect services in different clusters. Any
+  service exposed on the application network is represented as a local service in
+  all of the linked namespaces.
+
+  <img src="images/BoutiqueProcessLocations.png" width="600"/>
