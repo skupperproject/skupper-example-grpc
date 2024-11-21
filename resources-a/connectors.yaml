@@ -1,0 +1,21 @@
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: productcatalogservice
+spec:
+  port: 3550
+  routingKey: productcatalogservice
+  selector: app=productcatalogservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: recommendationservice
+spec:
+  port: 8080
+  routingKey: recommendationservice
+  selector: app=recommendationservice
+  type: tcp
+

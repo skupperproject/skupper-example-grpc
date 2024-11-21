@@ -1,0 +1,54 @@
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: checkoutservice
+spec:
+  port: 5050
+  routingKey: checkoutservice
+  selector: app=checkoutservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: cartservice
+spec:
+  port: 7070
+  routingKey: cartservice
+  selector: app=cartservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: currencyservice
+spec:
+  port: 7000
+  routingKey: currencyservice
+  selector: app=currencyservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: adservice
+spec:
+  port: 9555
+  routingKey: adservice
+  selector: app=adservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: redis-cart
+spec:
+  port: 6379
+  routingKey: redis-cart
+  selector: app=redis-cart
+  type: tcp
+

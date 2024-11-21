@@ -1,0 +1,32 @@
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: emailservice
+spec:
+  port: 5000
+  routingKey: emailservice
+  selector: app=emailservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: paymentservice
+spec:
+  port: 50051
+  routingKey: paymentservice
+  selector: app=paymentservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: shippingservice
+spec:
+  port: 50051
+  routingKey: shippingservice
+  selector: app=shippingservice
+  type: tcp
+

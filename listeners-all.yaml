@@ -1,0 +1,109 @@
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: productcatalogservice
+spec:
+  host: productcatalogservice
+  port: 3550
+  routingKey: productcatalogservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: recommendationservice
+spec:
+  host: recommendationservice
+  port: 8080
+  routingKey: recommendationservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: checkoutservice
+spec:
+  host: checkoutservice
+  port: 5050
+  routingKey: checkoutservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: cartservice
+spec:
+  host: cartservice
+  port: 7070
+  routingKey: cartservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: currencyservice
+spec:
+  host: currencyservice
+  port: 7000
+  routingKey: currencyservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: adservice
+spec:
+  host: adservice
+  port: 9555
+  routingKey: adservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: redis-cart
+spec:
+  host: redis-cart
+  port: 6379
+  routingKey: redis-cart
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: emailservice
+spec:
+  host: emailservice
+  port: 5000
+  routingKey: emailservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: paymentservice
+spec:
+  host: paymentservice
+  port: 50051
+  routingKey: paymentservice
+  type: tcp
+
+---
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: shippingservice
+spec:
+  host: shippingservice
+  port: 50051
+  routingKey: shippingservice
+  type: tcp
+
