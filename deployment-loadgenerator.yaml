@@ -28,7 +28,7 @@ spec:
               exit 1
           fi
         name: frontend-check
-        image: busybox:latest
+        image: mirror.gcr.io/library/busybox:latest
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
