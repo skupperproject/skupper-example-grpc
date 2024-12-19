@@ -140,7 +140,7 @@ spec:
     spec:
       containers:
       - name: redis
-        image: redis:alpine
+        image: mirror.gcr.io/library/redis:alpine
         ports:
         - containerPort: 6379
         readinessProbe:
